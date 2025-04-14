@@ -1,0 +1,132 @@
+extends layout
+
+block content
+  .container.py-5
+    .row.justify-content-center
+      .col-12
+        .card.shadow-lg.border-0.rounded-3
+          .card-header.bg-primary.text-white.py-3
+            .d-flex.justify-content-between.align-items-center
+              h1.h3.mb-0 CRUD de Estudiantes
+              a.btn.btn-light(href='/nuevo', aria-label="Agregar nuevo estudiante")
+                i.bi.bi-plus-circle.me-2
+                | Nuevo Estudiante
+
+          .card-body.p-4
+            .row.mb-4
+              .col-md-6.mb-3.mb-md-0
+                .input-group
+                  span.input-group-text
+                    i.bi.bi-search
+                  input.form-control(type="search", placeholder="Buscar estudiantes...", aria-label="Buscar estudiantes")
+              .col-md-6.d-flex.justify-content-md-end
+                select.form-select.w-auto
+                  option(selected) Todos
+                  option Activos
+                  option Inactivos
+                  option(value="") Por carrera
+
+            if estudiantes && estudiantes.length
+              .table-responsive
+                table.table.table-hover.align-middle
+                  thead.table-dark
+                    tr
+                      th.text-center ID
+                      th Nombre Completo
+                      th.d-none.d-md-table-cell Edad
+                      th.d-none.d-md-table-cell Correo
+                      th Carrera
+                      th.d-none.d-lg-table-cell Universidad
+                      th.text-center Estado
+                      th.text-center Acciones
+                  tbody
+                    each estudiante in estudiantes
+                      tr(class=estudiante.activo ? '' : 'table-secondary')
+                        td.text-center= estudiante.id
+                        td
+                          .fw-bold= estudiante.nombre + ' ' + estudiante.apellido
+                          small.text-muted.d-md-none
+                            | #{estudiante.edad} años • #{estudiante.correo}
+                        td.d-none.d-md-table-cell= estudiante.edad
+                        td.d-none.d-md-table-cell
+                          a(href=`mailto:${estudiante.correo}`)= estudiante.correo
+                        td
+                          span.badge.bg-info.text-dark= estudiante.carrera
+                        td.d-none.d-lg-table-cell= estudiante.universidad
+                        td.text-center
+                          span(class=`badge ${estudiante.activo ? 'bg-success' : 'bg-secondary'}`)
+                            i(class=`bi ${estudiante.activo ? 'bi-check-circle' : 'bi-x-circle'} me-1`)
+                            = estudiante.activo ? 'Activo' : 'Inactivo'
+                        td.text-center
+                          .btn-group
+                            a.btn.btn-outline-primary.btn-sm(href=`/editar/${estudiante.id}`, aria-label=`Editar estudiante ${estudiante.nombre}`)
+                              i.bi.bi-pencil-fill
+                              span.d-none.d-sm-inline.ms-1 Editar
+                            button.btn.btn-outline-danger.btn-sm(type="button", data-bs-toggle="modal", data-bs-target="#deleteModal", data-id=estudiante.id, data-name=`${estudiante.nombre} ${estudiante.apellido}`, aria-label=`Eliminar estudiante ${estudiante.nombre}`)
+                              i.bi.bi-trash-fill
+                              span.d-none.d-sm-inline.ms-1 Eliminar
+              
+              .d-flex.justify-content-between.align-items-center.mt-4
+                p.text-muted.mb-0
+                  | Mostrando 
+                  strong #{estudiantes.length} 
+                  | estudiante#{estudiantes.length !== 1 ? 's' : ''}
+                nav(aria-label="Paginación")
+                  ul.pagination.mb-0
+                    li.page-item.disabled
+                      a.page-link(href="#", aria-label="Anterior")
+                        span(aria-hidden="true") &laquo;
+                    li.page-item.active
+                      a.page-link(href="#") 1
+                    li.page-item
+                      a.page-link(href="#") 2
+                    li.page-item
+                      a.page-link(href="#") 3
+                    li.page-item
+                      a.page-link(href="#", aria-label="Siguiente")
+                        span(aria-hidden="true") &raquo;
+            else
+              .text-center.py-5
+                i.bi.bi-people.text-muted.display-1.mb-3.d-block
+                h3.text-muted No hay estudiantes registrados
+                p.text-muted.mb-4 Agrega un nuevo estudiante para comenzar
+                a.btn.btn-primary.btn-lg(href='/nuevo')
+                  i.bi.bi-plus-circle.me-2
+                  | Agregar Estudiante
+
+  // Modal de confirmación para eliminar
+  #deleteModal.modal.fade(tabindex="-1", aria-labelledby="deleteModalLabel", aria-hidden="true")
+    .modal-dialog
+      .modal-content
+        .modal-header.bg-danger.text-white
+          h5#deleteModalLabel.modal-title
+            i.bi.bi-exclamation-triangle.me-2
+            | Confirmar eliminación
+          button.btn-close.btn-close-white(type="button", data-bs-dismiss="modal", aria-label="Cerrar")
+        .modal-body
+          p ¿Estás seguro que deseas eliminar al estudiante <strong id="studentName"></strong>?
+          p.text-danger.fw-bold Esta acción no se puede deshacer.
+        .modal-footer
+          button.btn.btn-secondary(type="button", data-bs-dismiss="modal") Cancelar
+          a#deleteLink.btn.btn-danger(href="#")
+            i.bi.bi-trash.me-2
+            | Eliminar
+
+  script.
+    // Script para manejar el modal de eliminación
+    document.addEventListener('DOMContentLoaded', function() {
+      const deleteModal = document.getElementById('deleteModal');
+      if (deleteModal) {
+        deleteModal.addEventListener('show.bs.modal', function(event) {
+          const button = event.relatedTarget;
+          const id = button.getAttribute('data-id');
+          const name = button.getAttribute('data-name');
+          
+          const studentNameElement = document.getElementById('studentName');
+          const deleteLink = document.getElementById('deleteLink');
+          
+          if (studentNameElement) studentNameElement.textContent = name;
+          if (deleteLink) deleteLink.href = `/eliminar/${id}`;
+        });
+      }
+    });

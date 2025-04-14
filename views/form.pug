@@ -1,0 +1,184 @@
+extends layout
+
+block content
+  .container.py-5
+    .row.justify-content-center
+      .col-lg-8
+        .card.shadow-lg.border-0.rounded-3
+          .card-header.bg-primary.text-white.py-3
+            h2.h3.mb-0
+              i.bi.bi-person-vcard.me-2
+              | #{titulo}
+          
+          .card-body.p-4
+            form(method='POST', action=accion, novalidate)
+              .row
+                .col-md-6.mb-3
+                  label.form-label.fw-bold(for="nombre") Nombre
+                  .input-group
+                    span.input-group-text
+                      i.bi.bi-person
+                    input#nombre.form-control(
+                      type='text', 
+                      name='nombre', 
+                      value=estudiante.nombre || '', 
+                      required,
+                      placeholder="Ingrese el nombre",
+                      aria-describedby="nombreHelp"
+                    )
+                  small#nombreHelp.form-text.text-muted Nombre del estudiante
+
+                .col-md-6.mb-3
+                  label.form-label.fw-bold(for="apellido") Apellido
+                  .input-group
+                    span.input-group-text
+                      i.bi.bi-person
+                    input#apellido.form-control(
+                      type='text', 
+                      name='apellido', 
+                      value=estudiante.apellido || '', 
+                      required,
+                      placeholder="Ingrese el apellido"
+                    )
+
+              .row
+                .col-md-4.mb-3
+                  label.form-label.fw-bold(for="edad") Edad
+                  .input-group
+                    span.input-group-text
+                      i.bi.bi-calendar3
+                    input#edad.form-control(
+                      type='number', 
+                      name='edad', 
+                      value=estudiante.edad || '', 
+                      required,
+                      min="16",
+                      max="100",
+                      placeholder="Edad"
+                    )
+
+                .col-md-8.mb-3
+                  label.form-label.fw-bold(for="correo") Correo Electrónico
+                  .input-group
+                    span.input-group-text
+                      i.bi.bi-envelope
+                    input#correo.form-control(
+                      type='email', 
+                      name='correo', 
+                      value=estudiante.correo || '', 
+                      required,
+                      placeholder="ejemplo@universidad.edu"
+                    )
+
+              .row
+                .col-md-6.mb-3
+                  label.form-label.fw-bold(for="carrera") Carrera
+                  .input-group
+                    span.input-group-text
+                      i.bi.bi-book
+                    input#carrera.form-control(
+                      type='text', 
+                      name='carrera', 
+                      value=estudiante.carrera || '', 
+                      required,
+                      placeholder="Ingrese la carrera"
+                    )
+
+                .col-md-6.mb-3
+                  label.form-label.fw-bold(for="genero") Género
+                  .input-group
+                    span.input-group-text
+                      i.bi.bi-gender-ambiguous
+                    select#genero.form-select(name='genero', required)
+                      option(value='', disabled, selected=!estudiante.genero) Selecciona género
+                      option(value='Masculino', selected=estudiante.genero === 'Masculino') Masculino
+                      option(value='Femenino', selected=estudiante.genero === 'Femenino') Femenino
+                      option(value='Otro', selected=estudiante.genero === 'Otro') Otro
+                      option(value='Prefiero no decir', selected=estudiante.genero === 'Prefiero no decir') Prefiero no decir
+
+              .mb-3
+                label.form-label.fw-bold(for="universidad") Universidad
+                .input-group
+                  span.input-group-text
+                    i.bi.bi-buildings
+                  input#universidad.form-control(
+                    type='text', 
+                    name='universidad', 
+                    value=estudiante.universidad || '', 
+                    required,
+                    placeholder="Nombre de la universidad"
+                  )
+
+              .card.bg-light.mb-4.mt-2
+                .card-body
+                  .form-check
+                    input#activo.form-check-input(
+                      type='checkbox', 
+                      name='activo', 
+                      checked=estudiante.activo !== undefined ? estudiante.activo : true
+                    )
+                    label.form-check-label.fw-bold(for="activo") 
+                      | Estudiante activo
+                    p.form-text.text-muted.mt-1 Indica si el estudiante está participando activamente en el programa
+
+              .d-flex.justify-content-between.mt-4
+                a.btn.btn-outline-secondary(href='/')
+                  i.bi.bi-arrow-left.me-2
+                  | Volver al listado
+                
+                .btn-group
+                  button.btn.btn-outline-secondary(type='reset')
+                    i.bi.bi-arrow-counterclockwise.me-2
+                    | Restablecer
+                  button.btn.btn-primary(type='submit')
+                    i.bi.bi-save.me-2
+                    | Guardar cambios
+
+          if titulo.includes('Editar')
+            .card-footer.bg-light.text-center.py-3
+              p.text-muted.mb-0
+                i.bi.bi-info-circle.me-2
+                | Editando información del estudiante ID: 
+                strong #{estudiante.id}
+
+  script.
+    // Script para validación del formulario
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.querySelector('form');
+      
+      form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+          event.preventDefault();
+          event.stopPropagation();
+          
+          // Resaltar campos con error
+          const invalidInputs = form.querySelectorAll(':invalid');
+          invalidInputs.forEach(input => {
+            input.classList.add('is-invalid');
+            
+            // Agregar mensaje de error
+            const feedback = document.createElement('div');
+            feedback.className = 'invalid-feedback';
+            feedback.textContent = input.validationMessage || 'Este campo es requerido';
+            
+            const parent = input.parentNode;
+            if (parent.className.includes('input-group')) {
+              parent.parentNode.appendChild(feedback);
+            } else {
+              input.parentNode.appendChild(feedback);
+            }
+          });
+        }
+        
+        form.classList.add('was-validated');
+      });
+      
+      // Limpiar validación al cambiar un campo
+      form.querySelectorAll('input, select').forEach(input => {
+        input.addEventListener('input', function() {
+          this.classList.remove('is-invalid');
+          const feedback = this.parentNode.querySelector('.invalid-feedback');
+          if (feedback) feedback.remove();
+        });
+      });
+    });
